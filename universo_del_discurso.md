@@ -1,3 +1,5 @@
+# UNIVERSO DEL DISCURSO
+## RESTAURANTE
 En este restaurante, se manejan diferentes entidades y relaciones para llevar a cabo sus operaciones diarias de manera eficiente. A continuación, se describe cada una de ellas y cómo interactúan entre sí:
 
 1. Ingredientes:
