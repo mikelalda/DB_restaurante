@@ -7,11 +7,12 @@ Este proyecto es para aprender a usar las bases de datos SQL con MariaDB. Para c
 3. Realizar los scripts SQL pertinentes para crear la BD.
 4. Realizar los scripts para rellenar los datos. [Con los siguientes datos](./documentos/datos.md).
 5. Realizar triggers para automatizar rellenos (si se puede utilizar funciones). [Texto triggers](./documentos/triggers.md).
-6. Hacer los ejercicios de consultas.
-7. Realizar procedimientos.
-8. Realizar una aplicacion en python para gestionar la base de datos.
-9. Crear usuarios y analizar las opciones de la aplicacion segun los privilegios del usuario.
-10. Preparar la aplicacion para que se pueda utilizar el cualquier dispositivo.
+6. Hacer los ejercicios de consultas. [Texto consultas](./documentos/consultas.md).
+7. Realizar las consultas con CASE. [Texto consultas](./documentos/consultas_case.md).
+8. Realizar procedimientos. [Texto procedimientos](./documentos/procedimientos.md).
+9. Realizar una aplicacion en python para gestionar la base de datos con las caracteristicas indicadas en [este documento](./documentos/interfaz.md).
+10. Crear usuarios y analizar las opciones de la aplicacion segun los privilegios del usuario. [Documento usuarios](./documentos/privilegios_usuarios.md).
+11. Preparar la aplicacion para que se pueda utilizar el cualquier dispositivo. [Procedimiento a seguir](./documentos/pyqtdeploy.md).
 
 ## Resultado
 
