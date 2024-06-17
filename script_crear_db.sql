@@ -57,6 +57,7 @@ CREATE TABLE COMANDA (
 CREATE TABLE CONTIENE_INGREDIENTE_PRODUCTO (
     id_ingrediente INT NOT NULL,
     id_producto INT NOT NULL,
+    cantidad INT NOT NULL DEFAULT 1,
     PRIMARY KEY (id_ingrediente, id_producto),
     FOREIGN KEY (id_ingrediente) REFERENCES INGREDIENTES(id_ingrediente),
     FOREIGN KEY (id_producto) REFERENCES PRODUCTO(id_producto)
