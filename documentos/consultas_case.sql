@@ -1,91 +1,101 @@
--- 1. Consultar empleados y su estado de edad
+-- 1. Consultar empleados y su estado de edad 
 -- Consulta para listar los empleados junto con una clasificación de su edad (por ejemplo, joven, adulto, mayor).
-SELECT 
-    id_empleado,
-    nombre,
-    direccion,
-    nacimiento,
-    age,
-    CASE 
-        WHEN age < 25 THEN 'Joven'
-        WHEN age BETWEEN 25 AND 50 THEN 'Adulto'
-        ELSE 'Mayor'
-    END AS estado_edad
-FROM empleado;
+select nombre, edad,
+	case 
+		when edad < 18 then 'joven'
+		when edad > 70 then 'mayor'
+		else 'adulto'
+	end as 'estado de edad'
+from empleado e;
 
--- 2. Consultar productos con clasificación de precio
+-- 2. Consultar productos con clasificación de precio 
 -- Consulta para listar los productos y clasificarlos según su precio (por ejemplo, barato, medio, caro).
-SELECT 
-    id_producto,
-    Nombre AS nombre_producto,
-    precio,
-    CASE 
-        WHEN precio < 5 THEN 'Barato'
-        WHEN precio BETWEEN 5 AND 15 THEN 'Medio'
-        ELSE 'Caro'
-    END AS clasificacion_precio
-FROM producto;
+select id_producto, Nombre, precio,
+	case 
+		when precio < 5 then 'barato'
+		when precio between 5 and 10 then 'medio'
+		when precio > 10 then 'caro'
+	end as clasificación
+from producto p;
 
--- 3. Consultar comandas y su estado de pago y completitud
+select id_producto, Nombre, precio,
+	case 
+		when precio < 6.99 then 'barato'
+		when precio >= 6.99 and precio < 10 then 'medio'
+		else 'caro'
+	end as clasificación
+from producto p; 
+
+-- 3. Consultar comandas y su estado de pago y completitud 
 -- Consulta para listar las comandas con un estado legible sobre si están completadas y pagadas.
-SELECT 
-    id_comanda,
-    descripcion,
-    id_mesa,
-    id_empleado,
-    CASE 
-        WHEN completada = TRUE THEN 'Completada'
-        ELSE 'Pendiente'
-    END AS estado_completada,
-    CASE 
-        WHEN pagado = TRUE THEN 'Pagado'
-        ELSE 'No Pagado'
-    END AS estado_pagado
-FROM comanda;
+select *,
+	case 
+		when pagada = 1 and completada = 1 then 'completada y pagada'
+		when pagada = 0 and completada = 1 then 'completada pero no pagada'
+		else 'ni completada ni pagada'
+	end	
+from comanda c;
 
--- 4. Consultar ingredientes en el almacén con estado de inventario
+-- 4. Consultar ingredientes en el almacén con estado de inventario 
 -- Consulta para listar los ingredientes en el almacén y clasificarlos según su cantidad (por ejemplo, bajo, medio, alto).
-SELECT 
-    a.id_ingrediente,
-    i.Nombre AS nombre_ingrediente,
-    a.cantidad,
-    CASE 
-        WHEN a.cantidad < 50 THEN 'Bajo'
-        WHEN a.cantidad BETWEEN 50 AND 200 THEN 'Medio'
-        ELSE 'Alto'
-    END AS estado_inventario
-FROM almacen a
-JOIN ingredientes i ON a.id_ingrediente = i.id_ingrediente;
-
--- 5. Consultar productos de comandas con su estado de completitud
+select Nombre,
+	case 
+		when cantidad < 15 then 'bajo'
+		when cantidad between 15 and 50 then 'medio'
+		else 'alto'
+	end	as 'estado ingrediente'
+from almacen a
+join ingredientes i on a.id_ingrediente = i.id_ingrediente;
+	
+-- 5. Consultar productos de comandas con su estado de completitud 
 -- Consulta para listar los productos de las comandas y mostrar si cada producto está completado.
-SELECT 
-    cpc.id_comanda,
-    cpc.id_producto,
-    p.Nombre AS nombre_producto,
-    cpc.cantidad,
-    CASE 
-        WHEN cpc.completada = TRUE THEN 'Completada'
-        ELSE 'Pendiente'
-    END AS estado_completada
-FROM contiene_producto_comanda cpc
-JOIN producto p ON cpc.id_producto = p.id_producto;
-
--- 6. Consultar ingredientes de productos con su estado de inventario
+select c.id_comanda, nombre, 
+	case 
+		when cpc.completado = 1 then 'completado'
+		else 'no completado'
+	end	as estado
+from producto p 
+join contiene_producto_comanda cpc on cpc.id_producto = p.id_producto 
+join comanda c on cpc.id_comanda = c.id_comanda
+order by c.id_comanda;
+-- 6. Consultar ingredientes de productos con su estado de inventario 
 -- Consulta para listar los ingredientes necesarios para los productos y clasificar su cantidad en inventario.
+select p.Nombre, i.Nombre, a.cantidad 
+from ingredientes i
+join contiene_ingrediente_producto cip ON i.id_ingrediente = cip.id_ingrediente 
+join producto p on p.id_producto = cip.id_producto
+join almacen a on a.id_ingrediente = i.id_ingrediente 
+order by cantidad;
 
-SELECT 
-    cip.id_producto,
-    p.Nombre AS nombre_producto,
-    cip.id_ingrediente,
-    i.Nombre AS nombre_ingrediente,
-    cip.cantidad AS cantidad_necesaria,
-    a.cantidad AS cantidad_en_almacen,
-    CASE 
-        WHEN a.cantidad < cip.cantidad THEN 'Falta'
-        ELSE 'Suficiente'
-    END AS estado_inventario
-FROM contiene_ingrediente_producto cip
-JOIN producto p ON cip.id_producto = p.id_producto
-JOIN ingredientes i ON cip.id_ingrediente = i.id_ingrediente
-JOIN almacen a ON cip.id_ingrediente = a.id_ingrediente;
+select i.Nombre
+		from almacen a 
+		join ingredientes i on a.id_ingrediente = i.id_ingrediente
+		where 1 = i.id_ingrediente;
+		
+
+
+create function warning (texto varchar(200))
+returns bool
+begin
+	signal sqlstate '01000' set MESSAGE_TEXT = texto;
+	return 1;
+end;
+
+drop trigger warning_trigger;
+create trigger warning_trigger
+after update 
+on almacen for each row 
+begin 
+	set @temp = 0;
+	set @warnin_text = concat('El producto ', 
+		(select i.Nombre
+		from almacen a 
+		join ingredientes i on a.id_ingrediente = i.id_ingrediente
+		where new.id_ingrediente = i.id_ingrediente),
+	' está apunto de agotarse.');
+ 	case
+ 		when new.cantidad < 10 and new.id_ingrediente = 1 then set @temp = warning(@warnin_text);
+ 		when new.cantidad < 5 and new.id_ingrediente = 2 then set @temp = warning(@warnin_text);
+ 		when new.cantidad < 6 and new.id_ingrediente = 3 then set @temp = warning(@warnin_text);
+ 	end case;
+end;
