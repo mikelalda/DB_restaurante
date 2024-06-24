@@ -194,6 +194,5 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     app.setStyleSheet(load_style_sheet())
     restaurant_app = RestaurantApp()
-    restaurant_app.setStyleSheet(load_style_sheet())
     restaurant_app.show()
     sys.exit(app.exec_())

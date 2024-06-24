@@ -85,7 +85,7 @@ class CocinaApp(QMainWindow):
         self.loadOrders()
 
 def load_style_sheet():
-    f = QtCore.QFile("style.css")
+    f = QtCore.QFile("interfaz_usuarios/style.css")
     f.open(QtCore.QFile.ReadOnly | QtCore.QFile.Text)
     ts = QtCore.QTextStream(f)
     stylesheet = ts.readAll()
