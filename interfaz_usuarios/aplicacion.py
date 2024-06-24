@@ -6,6 +6,8 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QPixmap, QFont
 from PyQt5.QtCore import Qt
+from PyQt5 import QtCore
+import platform
 
 # Configuración de la conexión a la base de datos
 db_host = 'localhost'
@@ -171,8 +173,27 @@ class RestaurantApp(QMainWindow):
 
         print(f"Orden creada con ID: {order_id}")
 
+def load_style_sheet():
+    f = QtCore.QFile("interfaz_usuarios/style.css")
+    f.open(QtCore.QFile.ReadOnly | QtCore.QFile.Text)
+    ts = QtCore.QTextStream(f)
+    stylesheet = ts.readAll()
+    if platform.system().lower() == 'darwin':  # see issue #12 on github
+        mac_fix = '''
+        QDockWidget::title
+        {
+            background-color: #be640f;
+            text-align: center;
+            height: 12px;
+        }
+        '''
+        stylesheet += mac_fix
+    return stylesheet
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+    app.setStyleSheet(load_style_sheet())
     restaurant_app = RestaurantApp()
+    restaurant_app.setStyleSheet(load_style_sheet())
     restaurant_app.show()
     sys.exit(app.exec_())

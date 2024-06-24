@@ -7,6 +7,8 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QFont, QTextDocument
 from PyQt5.QtPrintSupport import QPrinter, QPrintDialog, QPrintPreviewDialog
+from PyQt5 import QtCore
+import platform
 
 # Configuración de la conexión a la base de datos
 db_host = 'localhost'
@@ -134,9 +136,27 @@ class FacturaApp(QMainWindow):
         invoice_text = self.generateInvoice(order_id)
         self.invoice_text.setText(invoice_text)
         print(invoice_text)
-        
+
+def load_style_sheet():
+    f = QtCore.QFile("style.css")
+    f.open(QtCore.QFile.ReadOnly | QtCore.QFile.Text)
+    ts = QtCore.QTextStream(f)
+    stylesheet = ts.readAll()
+    if platform.system().lower() == 'darwin':  # see issue #12 on github
+        mac_fix = '''
+        QDockWidget::title
+        {
+            background-color: #31363b;
+            text-align: center;
+            height: 12px;
+        }
+        '''
+        stylesheet += mac_fix
+    return stylesheet
+   
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+    app.setStyleSheet(load_style_sheet())
     factura_app = FacturaApp()
     factura_app.show()
     sys.exit(app.exec_())
