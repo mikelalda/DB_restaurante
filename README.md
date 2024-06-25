@@ -12,7 +12,8 @@ Este proyecto es para aprender a usar las bases de datos SQL con MariaDB. Para c
 8. Realizar procedimientos. [Texto procedimientos](./documentos/procedimientos.md).
 9. Realizar una aplicacion en python para gestionar la base de datos con las caracteristicas indicadas en [este documento](./documentos/interfaz.md).
 10. Crear usuarios y analizar las opciones de la aplicacion segun los privilegios del usuario. [Documento usuarios](./documentos/privilegios_usuarios.md).
-11. Preparar la aplicacion para que se pueda utilizar el cualquier dispositivo. [Procedimiento a seguir](./documentos/pyqtdeploy.md).
+11. realiza una aplicacion de Telegram para poder conectar y controlar la base de datos desde un telefono.
+12. Preparar la aplicacion para que se pueda utilizar el cualquier dispositivo. [Procedimiento a seguir](./documentos/pyqtdeploy.md).
 
 ## Resultado
 
@@ -20,14 +21,15 @@ Para poder ejecutar el resultado...
 
 # TODO
 
-* [X] Realizar el esquema de modelo relacion con sus entidades, atributos y relaciones pertinentes desde el[universo del discurso](universo_del_discurso.md).
+* [X] Realizar el esquema de modelo relacion con sus entidades, atributos y relaciones pertinentes desde el [universo del discurso](universo_del_discurso.md).
 * [X] Realizar el esquema del modelo relacional siguiendo las funciones de normalizacion
 * [X] Realizar los scripts SQL pertinentes para crear la BD
 * [X] Realizar los scripts para rellenar los datos
 * [X] Realizar triggers para automatizar rellenos (si se puede utilizar funciones)
 * [X] Hacer las consultas
-* [ ] Realizar los procedimientos
+* [X] Realizar los procedimientos
 * [X] Realizar una aplicacion en python para gestionar la base de datos
-* [ ] Crear usuarios y analizar las opciones de la aplicacion segun los privilegios del usuario
+* [X] Crear usuarios y analizar las opciones de la aplicacion segun los privilegios del usuario.
+* [ ] Crear la aplicación de Telegram.
 * [ ] Preparar la aplicacion para que se pueda utilizar el cualquier dispositivo con pyqtdeploy.
 * [ ] Terminar README

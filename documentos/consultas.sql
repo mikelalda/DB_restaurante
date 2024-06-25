@@ -1,50 +1,52 @@
 -- Mostrar todos los ingredientes de tipo verdura:
-SELECT Nombre 
-FROM INGREDIENTES
-WHERE Tipo = 'tipo_ingrediente';
+select *
+from ingredientes i 
+where Tipo = 'verdura';
 
 -- Obtener la mesa con mayor capacidad:
-SELECT id_mesa, capacidad
-FROM MESA
-ORDER BY capacidad DESC
-LIMIT 1;
+select id_mesa, max(capacidad)
+from mesa m ;
 
 -- Listar todos los productos de un tipo específico, ordenados por precio ascendente:
-SELECT Nombre, Descripcion, precio
-FROM PRODUCTO
-WHERE tipo = 'tipo_producto'
-ORDER BY precio ASC;
-
+select *
+from producto p 
+where tipo = 'Entrada'
+order by precio;
 
 -- Obtener los empleados mayores de cierta edad:
-SELECT nombre, anos
-FROM EMPLEADO
-WHERE anos > edad_limite;
+alter table empleado 
+add edad int;
+
+update empleado 
+set edad = round(rand()*100) + 16;  
+
+select *
+from empleado e 
+where edad > 25;
 
 -- Mostrar las comandas pendientes de pagar, indicando la mesa y ubicacion:
-SELECT c.id_comanda, c.descripcion, m.ubicacion, e.nombre AS empleado
-FROM COMANDA c
-JOIN MESA m ON c.id_mesa = m.id_mesa
-JOIN EMPLEADO e ON c.id_empleado = e.id_empleado
-WHERE c.pagado = 0;
+select c.id_comanda , m.id_mesa, m.ubicacion 
+from comanda c 
+join mesa m on c.id_mesa = m.id_mesa 
+where pagada = 0;
 
 -- Listar los productos que contienen un ingrediente específico:
-SELECT p.Nombre, p.Descripcion
-FROM PRODUCTO p
-JOIN CONTIENE_INGREDIENTE_PRODUCTO cip ON p.id_producto = cip.id_producto
-JOIN INGREDIENTES i ON cip.id_ingrediente = i.id_ingrediente
-WHERE i.Nombre = 'nombre_ingrediente';
+select  p.*, i.Nombre 
+from producto p 
+join contiene_ingrediente_producto cip on cip.id_producto=p.id_producto 
+join ingredientes i on cip.id_ingrediente = i.id_ingrediente 
+where i.Nombre = 'tomate';
 
 -- Obtener las comandas completadas por un empleado en particular:
-SELECT c.id_comanda, c.descripcion
-FROM COMANDA c
-JOIN EMPLEADO e ON c.id_empleado = e.id_empleado
-WHERE e.nombre = 'nombre_empleado' AND c.completada = 1;
+select *
+from comanda c 
+join empleado e on e.id_empleado = c.id_empleado 
+where c.completada = 1 and e.nombre = 'María García';
+
 
 -- Calcular el total de ventas por producto:
-SELECT p.Nombre, SUM(cpc.cantidad * p.precio) AS total_ventas
-FROM PRODUCTO p
-JOIN CONTIENE_PRODUCTO_COMANDA cpc ON p.id_producto = cpc.id_producto
-JOIN COMANDA c ON cpc.id_comanda = c.id_comanda
-WHERE c.pagado = 1
-GROUP BY p.Nombre;
+select cpc.id_producto, sum(cpc.cantidad * p.precio) as total_ventas
+from contiene_producto_comanda cpc 
+join producto p on cpc.id_producto = p.id_producto
+group by cpc.id_producto ;
+

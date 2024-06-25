@@ -25,7 +25,7 @@ Se deben crear métodos para:
 Se deben utilizar las siguientes tecnologías:
 
     Python 3.x
-    PyQt5
+    PyQt5 (pyuic5 -x miventana.ui -o miventana_ui.py)
     MySQL
 
 Para completar este ejercicio, se recomienda seguir los pasos siguientes:

@@ -73,7 +73,7 @@ select i.Nombre
 		where 1 = i.id_ingrediente;
 		
 
-
+drop function if exists
 create function warning (texto varchar(200))
 returns bool
 begin
@@ -92,10 +92,11 @@ begin
 		from almacen a 
 		join ingredientes i on a.id_ingrediente = i.id_ingrediente
 		where new.id_ingrediente = i.id_ingrediente),
-	' está apunto de agotarse.');
+		' está apunto de agotarse.');
  	case
  		when new.cantidad < 10 and new.id_ingrediente = 1 then set @temp = warning(@warnin_text);
  		when new.cantidad < 5 and new.id_ingrediente = 2 then set @temp = warning(@warnin_text);
  		when new.cantidad < 6 and new.id_ingrediente = 3 then set @temp = warning(@warnin_text);
  	end case;
 end;
+

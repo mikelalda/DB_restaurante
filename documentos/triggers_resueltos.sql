@@ -2,93 +2,113 @@
 -- En ella se guardaran los datos de ingredientes y las cantidades existentes.
 -- cuando se completen las comandas (contiene_producto_comanda), se tendra que
 -- restar de ingredientes la cantidad utilizada.
-CREATE TABLE almacen(
-    id_ingrediente INTEGER PRIMARY KEY,
-    cantidad INTEGER NOT NULL DEFAULT 0
-    FOREIGN KEY ingrediente (id_ingrediente) REFERENCES ingredientes(id_ingrediente);
+create table almacen(
+id_ingrediente int primary key,
+cantidad float,
+foreign key (id_ingrediente) references ingredientes(id_ingrediente)
 );
 
+alter table almacen
+MODIFY column cantidad float default 0;
 
-INSERT almacen (id_ingrediente)  SELECT id_ingrediente FROM ingredientes;
+select id_ingrediente, round(rand()*100)
+from ingredientes i;
 
-UPDATE almacen 
-SET cantidad = (SELECT round(1+ rand() * 49));
+insert almacen values(1,1);
+delete from almacen;
 
+insert almacen (id_ingrediente, cantidad) 
+(select id_ingrediente, round(rand()*100) from ingredientes i);
 
-CREATE TRIGGER tr_actualizar_almacen
-AFTER UPDATE ON contiene_producto_comanda
-FOR EACH ROW
-BEGIN
-    IF NEW.completada = 1 THEN
-        UPDATE almacen a
-        JOIN contiene_ingrediente_producto ip ON a.id_ingrediente = ip.id_ingrediente
-        JOIN producto p ON ip.id_producto = p.id_producto
-        SET a.cantidad = a.cantidad - (
-            SELECT SUM(cpc.cantidad * COALESCE(new.cantidad, 1))
-            FROM contiene_producto_comanda cpc
-            WHERE cpc.id_comanda = NEW.id_comanda
-              AND cpc.id_producto = ip.id_producto
-              AND cpc.completada = 1
-        )
-        WHERE EXISTS (
-            SELECT 1
-            FROM contiene_producto_comanda
-            WHERE id_comanda = NEW.id_comanda
-              AND id_producto = ip.id_producto
-        );
-    END IF;
-END;
+alter table contiene_producto_comanda 
+add completado bool default 0;
+
+alter table contiene_ingrediente_producto 
+add cantidad float;
+
+select floor(RAND() * 10);
+
+update contiene_ingrediente_producto 
+set cantidad = 1 + floor(RAND() * 9);
+
+select distinct cpc.id_producto, cpc.cantidad, cip.id_ingrediente, cip.cantidad, cpc.cantidad*cip.cantidad as 'cantidad a restar'
+from contiene_producto_comanda cpc
+join producto p on p.id_producto = cpc.id_producto
+join contiene_ingrediente_producto cip on p.id_producto = cip.id_producto
+where 1 = cpc.id_producto;
+
+drop trigger producto_completado;
+create trigger producto_completado
+after update 
+on contiene_producto_comanda for each row
+begin 
+	update almacen 
+	set cantidad = cantidad - (select distinct cpc.cantidad*cip.cantidad
+								from contiene_producto_comanda cpc
+								join producto p on p.id_producto = cpc.id_producto
+								join contiene_ingrediente_producto cip on p.id_producto = cip.id_producto
+								group by id_ingrediente
+								having new.id_producto = cpc.id_producto)
+	where id_ingrediente in (select distinct cip.id_ingrediente
+								from contiene_producto_comanda cpc
+								join producto p on p.id_producto = cpc.id_producto
+								join contiene_ingrediente_producto cip on p.id_producto = cip.id_producto
+								where new.id_producto = p.id_producto);
+end;
+
 
 -- Cuando se completen todos los contiene_producto_comanda de la comanda, que se actualice una columna llamada completada en comanda.
 -- Realizar los cambios nedesarios para ello
-CREATE TRIGGER check_completada
-AFTER UPDATE
-ON contiene_producto_comanda FOR EACH row
-BEGIN
-    IF NOT EXISTS (
-        SELECT completada
-        FROM contiene_producto_comanda
-        WHERE id_comanda = NEW.id_comanda AND completada = 0
-    ) THEN
-		UPDATE restaurante.comanda 
-		SET completada = 1 
-		WHERE id_comanda = NEW.id_comanda;
-    END IF;
-END
+alter table comanda 
+add completada bool default 0;
 
+select *
+from contiene_producto_comanda cpc 
+where completado = 0 and id_comanda = 45;
 
+drop trigger comanda_completada;
+create trigger comanda_completada
+after update 
+on contiene_producto_comanda for each row 
+begin 
+	if not exists (select *
+		from contiene_producto_comanda cpc 
+		where cpc.completado = 0 and cpc.id_comanda = new.id_comanda)
+	then
+		update comanda 
+		set completada = 1
+		where new.id_comanda = id_comanda;
+	end if;
+end;
 
+UPDATE contiene_producto_comanda
+SET completado=1
+WHERE id_comanda=44;
 
--- En caso de no tener ingredientes para el producto seleccionado, que
--- el camarero no pueda elegir ese producto y muestre un error de que no hay ingredientes
-CREATE TRIGGER tr_verificar_ingredientes
-BEFORE INSERT ON contiene_producto_comanda
-FOR EACH ROW
-BEGIN
-    DECLARE cant_ingredientes INT;
-    
-    SELECT SUM(a.cantidad * COALESCE(NEW.cantidad, 1)) INTO cant_ingredientes
-    FROM almacen a
-    JOIN contiene_ingrediente_producto cip ON a.id_ingrediente = cip.id_ingrediente
-    JOIN producto p ON cip.id_producto = p.id_producto
-    WHERE cip.id_producto = NEW.id_producto
-    GROUP BY cip.id_producto;
-    
-    IF cant_ingredientes <= 0 THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No hay ingredientes suficientes para este producto.';
-    END IF;
-END;
-
-
+set @cantidades = (select cantidad from almacen a where id_ingrediente = 1);
+select @cantidades;
 -- Cuando en el almacen la cantidad del ingrediente sea menor que 10, que salte un 
--- aviso para poder comprar mas y reponer. SQLSTATE = '01000'
-CREATE TRIGGER tr_aviso_compra_ingredientes
-AFTER UPDATE ON almacen
-FOR EACH ROW
-BEGIN
-	SET @text = concat('Aviso: La cantidad del ingrediente ', (SELECT nombre FROM ingredientes WHERE id_ingrediente = NEW.id_ingrediente), ' es menor que 10. Considere comprar más.');
-    IF NEW.cantidad < 10 THEN
-        SIGNAL SQLSTATE '01000' SET MESSAGE_TEXT = @text;
-    END IF;
-END;
+-- aviso (warning) para poder comprar mas y reponer. SQLSTATE = '01000'
+
+drop trigger warning;
+create trigger warning
+after update 
+on almacen for each row 
+begin 
+	set @warnin_text = concat('El producto ', new.id_ingrediente, ' está apunto de agotarse.');	
+	if new.cantidad < 10 then 
+		signal sqlstate '01000' set MESSAGE_TEXT=@warnin_text;
+	end if;
+end;
+
+update almacen 
+set cantidad = 8
+where id_ingrediente =1;
+show warnings;
+
+-- realiza los cambios para que podamos saber si la comanda ha sido pagada o no
+alter table comanda 
+add pagada bool default 0;
+
+
 
